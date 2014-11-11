@@ -1,7 +1,9 @@
-Yik Yak Command Line Version (Version 2.1)
+Yik Yak Command Line Version (Version 2.2)
 ==============
 
 Python implementation of Yik Yak using the pyak API by joseph346. More features to come in the future.
+
+Archive functionality implented by stuharvey. Planning to add data analysis functions to the archive.
 
 --------------------------------------------------------------------------------------
 ## Getting Started Guide for Users on OS X and Linux
@@ -9,7 +11,8 @@ Python implementation of Yik Yak using the pyak API by joseph346. More features 
 - Click Download ZIP
 - Install Python 3 (latest version is 3.4.2): http://www.python.org/downloads/
 - Open Terminal
-- Install Requests ```python3.4 -m pip install requests```
+- Install Requests  ```python3.4 -m pip install requests```
+- Install Pandas    ```python3.4 -m pip install pandas```
 
 Commands below are used for running the app:
 - Type this command: ```cd ./Downloads/YikYakTerminal-master```
@@ -44,6 +47,7 @@ You can change this location at any time and see yaks from different colleges.
 
 Actions are performed using a single letter and optional parameter(s).
 
+    *Passively archive Yaks     (A)
     *Read Latest Yaks		    (R)
     *Read Top Local Yaks		(T)
     

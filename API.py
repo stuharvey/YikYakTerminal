@@ -7,6 +7,7 @@ import datetime
 import urllib
 import os
 import uuid
+import pandas as pd
 
 from hashlib import sha1
 from hashlib import md5
@@ -158,6 +159,10 @@ class Yak:
 		elif self.liked < 0:
 			my_action = "v "
 		print ("\n\t%s%s likes  |  Posted  %s  at  %s %s" % (my_action, self.likes, self.time, self.latitude, self.longitude))
+
+	def get_data(self):
+		return [self.poster_id, self.longitude, self.latitude, self.time, self.likes, self.message]
+
 
 class Yakker:
 	base_url = "https://us-east-api.yikyakapi.net/api/"
