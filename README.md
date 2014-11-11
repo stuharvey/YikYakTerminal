@@ -1,4 +1,4 @@
-Yik Yak Command Line Version (Version 2.2)
+Yik Yak Command Line Version (Version 2.1)
 ==============
 
 Python implementation of Yik Yak using the pyak API by joseph346. More features to come in the future.
