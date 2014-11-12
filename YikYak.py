@@ -4,6 +4,7 @@ import pygeocoder
 import requests
 import pandas as pd
 import time
+import threading
 
 from datetime import datetime
 
@@ -73,23 +74,31 @@ def main():
 	
 	while True:
 		currentlist = []
-		currentlist = remoteyakker.get_yaks()
+
+		# Create background process for archiving yaks
+		archiver = threading.Thread(target=archive, args=(remoteyakker,))
+		# (daemon = True) -> process stops when program exits
+		archiver.daemon = True
 
 		# Insert line gap
 		print()
 		
 		# Show all action choices
-		choice = input("*Passively archive yaks\t\t(A)\n*Read Latest Yaks\t\t(R)\n*Read Top Local Yaks\t\t(T)\n\n*Read Best Yaks of All Time\t(B)\n\n*Show User Yaks\t\t\t(S)\n*Show User Comments\t\t(O)\n\n*Post Yak\t\t\t(P) or (P <message>)\n*Post Comment\t\t\t(C) or (C <yak#>)\n\n*Upvote Yak\t\t\t(U) or (U <yak#>)\n*Downvote Yak\t\t\t(D) or (D <yak#>)\n*Report Yak\t\t\t(E) or (E <yak#>)\n\n*Upvote Comment\t\t\t(V) or (V <yak# comment#>)\n*Downvote Comment\t\t(H) or (H <yak# comment#>)\n*Report Comment\t\t\t(M) or (M <yak# comment#>)\n\n*Yakarma Level\t\t\t(Y)\n\n*Choose New User ID\t\t(I) or (I <userID>)\n*Choose New Location\t\t(L) or (L <location>)\n\n*Contact Yik Yak\t\t(F)\n\n*Quit App\t\t\t(Q)\n\n-> ")
+		choice = input("(R) Read\t\t(A) Start archiver\t\t(H) Help\n-> ")
 		
 		# Read Yaks
 		if choice.upper() == 'R':
 			currentlist = remoteyakker.get_yaks()
 			read(currentlist)
 		
+		# Show help
+		elif choice[0].upper() == 'H':
+			print("*Passively archive yaks\t\t(A)\n\n*Read Latest Yaks\t\t(R)\n*Read Top Local Yaks\t\t(T)\n\n*Read Best Yaks of All Time\t(B)\n\n*Show User Yaks\t\t\t(S)\n*Show User Comments\t\t(O)\n\n*Post Yak\t\t\t(P) or (P <message>)\n*Post Comment\t\t\t(C) or (C <yak#>)\n\n*Upvote Yak\t\t\t(U) or (U <yak#>)\n*Downvote Yak\t\t\t(D) or (D <yak#>)\n*Report Yak\t\t\t(E) or (E <yak#>)\n\n*Upvote Comment\t\t\t(V) or (V <yak# comment#>)\n*Downvote Comment\t\t(H) or (H <yak# comment#>)\n*Report Comment\t\t\t(M) or (M <yak# comment#>)\n\n*Yakarma Level\t\t\t(Y)\n\n*Choose New User ID\t\t(I) or (I <userID>)\n*Choose New Location\t\t(L) or (L <location>)\n\n*Contact Yik Yak\t\t(F)\n\n*Quit App\t\t\t(Q)\n\n-> ")
+
 		# Archive Yaks
 		elif choice.upper() == 'A':
-			currentlist = remoteyakker.get_yaks()
-			archive(currentlist)
+			archiver.start()
+			print("Archive daemon started.")
 
 		# Read Local Top Yaks
 		elif choice.upper() == 'T':
@@ -452,22 +461,29 @@ def read(yaklist):
 			
 		yakNum += 1
 
-def archive(yaklist):
-	yak_matrix = []
-	for yak in yaklist:
-		yak_matrix.append(yak.get_data())
-		
-	newdata = pd.DataFrame(yak_matrix, columns=['Author', 'Long', 'Lat', 'Time', 'Likes', 'Message'])
-	try:
-		olddata = pd.read_csv('yaks.csv')
-		bothdata = olddata.append(newdata, ignore_index=True)
-		bothdata.drop_duplicates(subset='Message',inplace=True)
-		bothdata.to_csv('yaks.csv', index=False)
-	except:
-		print("No archive file. Creating new yaks.csv.")
-		newdata.to_csv('yaks.csv', index=False)
+def archive(yakker):
+	while True:
+		yak_matrix = []
+		yaklist = yakker.get_yaks()
+		for yak in yaklist:
+			yak_matrix.append(yak.get_data())
+			
+		numyaks = 0
+		newdata = pd.DataFrame(yak_matrix, columns=['Author', 'Long', 'Lat', 'Time', 'Likes', 'Message'])
+		try:
+			olddata = pd.read_csv('yaks.csv')
+			bothdata = olddata.append(newdata, ignore_index=True)
+			bothdata.drop_duplicates(subset='Message',inplace=True)
+			bothdata.to_csv('yaks.csv', index=False)
+			numyaks = (len(bothdata.index)-len(olddata.index))
+		except FileNotFoundError:
+			print("No archive file. Creating new yaks.csv.")
+			newdata.to_csv('yaks.csv', index=False)
+			numyaks = len(newdata.index)
+		except:
+			print("Houston we have a problem.")
 
-	print("New yaks appended at ", datetime.now().time())
-	time.sleep(60)
+		print ("\t\t\t", numyaks, " new yaks appended at ", datetime.now().time(),end="\r-> ")
+		time.sleep(60)
 		
 main()
