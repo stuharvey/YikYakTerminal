@@ -474,8 +474,12 @@ def archive(yakker):
 			olddata = pd.read_csv('yaks.csv')
 			bothdata = olddata.append(newdata, ignore_index=True)
 			bothdata.drop_duplicates(subset='Message',inplace=True)
-			bothdata.to_csv('yaks.csv', index=False)
 			numyaks = (len(bothdata.index)-len(olddata.index))
+			if numyaks > 10:
+				bothdata.to_csv('yaks.csv', index=False)
+				print ("\t\t\t", numyaks, " new yaks appended at ", datetime.now().time(),end="\r-> ")
+			else:
+				print ("\t\t\t --- ",numyaks," --- ",datetime.now().time(),end="\r-> ")
 		except FileNotFoundError:
 			print("No archive file. Creating new yaks.csv.")
 			newdata.to_csv('yaks.csv', index=False)
@@ -483,7 +487,6 @@ def archive(yakker):
 		except:
 			print("Houston we have a problem.")
 
-		print ("\t\t\t", numyaks, " new yaks appended at ", datetime.now().time(),end="\r-> ")
 		time.sleep(60)
 		
 main()
