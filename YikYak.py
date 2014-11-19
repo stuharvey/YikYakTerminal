@@ -5,6 +5,8 @@ import requests
 import pandas as pd
 import time
 import threading
+import geojson as gj
+import numpy as np
 
 from datetime import datetime
 
@@ -477,16 +479,33 @@ def archive(yakker):
 			numyaks = (len(bothdata.index)-len(olddata.index))
 			if numyaks > 10:
 				bothdata.to_csv('yaks.csv', index=False)
+				write_geojson(bothdata)
 				print ("\t\t\t", numyaks, " new yaks appended at ", datetime.now().time(),end="\r-> ")
 			else:
 				print ("\t\t\t --- ",numyaks," --- ",datetime.now().time(),end="\r-> ")
 		except FileNotFoundError:
 			print("No archive file. Creating new yaks.csv.")
 			newdata.to_csv('yaks.csv', index=False)
+			write_geojson(newdata)
 			numyaks = len(newdata.index)
 		except:
-			print("Houston we have a problem.")
+			print("Problem writing to yaks.csv:", sys.exc_info()[0])
 
 		time.sleep(60)
-		
+
+def write_geojson(yak_df):
+	print("Trying to create yak geojson")
+	try:
+		features = []
+		yaks = yak_df.as_matrix()
+		for yak in yaks:
+			geom = gj.Point((yak[1],yak[2]))
+			props = {"Yak":yak[5],"Time:":yak[3]}
+			features.append(gj.Feature(geometry=geom,properties=props))
+		geojson_yaks = gj.FeatureCollection(features)
+		fp = open('geoyaks.geojson', 'w')
+		gj.dump(geojson_yaks, fp)
+	except:
+		print("Error in writing geojson:", sys.exc_info()[0])
+
 main()
